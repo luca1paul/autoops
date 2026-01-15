@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, Response
-from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
+from flask import Flask, jsonify, Response # type: ignore
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST # type: ignore
 import os
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ REQUEST_COUNT = Counter(
 @app.before_request
 def before_request():
     """Count each incoming request by method and endpoint."""
-    from flask import request
+    from flask import request # type: ignore
     REQUEST_COUNT.labels(method=request.method, endpoint=request.path).inc()
 
 # --- API Routes ---
