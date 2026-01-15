@@ -51,6 +51,8 @@ jobs:
         working-directory: ansible
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+          GITHUB_ACTOR: ${{ github.actor }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
         run: |
           ansible-playbook playbooks/deploy_autoops.yml
-
+          

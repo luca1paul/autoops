@@ -7,6 +7,10 @@
       community.docker.docker_image:
         name: ghcr.io/luca1paul/autoops-api:latest
         source: pull
+        force_source: true
+        registry_url: ghcr.io
+        registry_username: "{{ lookup('env', 'GITHUB_ACTOR') }}"
+        registry_password: "{{ lookup('env', 'GHCR_PAT') }}"
 
     - name: Stop existing AutoOps container (if any)
       community.docker.docker_container:
@@ -21,4 +25,3 @@
         restart_policy: always
         ports:
           - "5000:5000"
-
