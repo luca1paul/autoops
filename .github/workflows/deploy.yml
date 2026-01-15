@@ -41,6 +41,11 @@ jobs:
       - name: Install Ansible
         run: sudo apt update && sudo apt install -y ansible
 
+      # --- Authenticate Docker to GHCR ---
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
       # --- Run Ansible Playbook ---
       - name: Run Ansible Deployment
         working-directory: ansible
