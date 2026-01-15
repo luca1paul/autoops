@@ -3,14 +3,17 @@
   hosts: autoops_servers
   become: yes
   tasks:
+    - name: Log in to GitHub Container Registry
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ lookup('env', 'GITHUB_ACTOR') }}"
+        password: "{{ lookup('env', 'GHCR_PAT') }}"
+
     - name: Pull latest AutoOps API image
       community.docker.docker_image:
         name: ghcr.io/luca1paul/autoops-api:latest
         source: pull
         force_source: true
-        registry_url: ghcr.io
-        registry_username: "{{ lookup('env', 'GITHUB_ACTOR') }}"
-        registry_password: "{{ lookup('env', 'GHCR_PAT') }}"
 
     - name: Stop existing AutoOps container (if any)
       community.docker.docker_container:
@@ -25,3 +28,13 @@
         restart_policy: always
         ports:
           - "5000:5000"
+
+    - name: Verify AutoOps API is running
+      ansible.builtin.uri:
+        url: "http://localhost:5000/status"
+        return_content: yes
+      register: api_health
+
+    - name: Show API status
+      ansible.builtin.debug:
+        msg: "{{ api_health.content }}"
