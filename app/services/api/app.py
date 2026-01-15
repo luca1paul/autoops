@@ -3,6 +3,16 @@ import os
 
 app = Flask(__name__)
 
+@app.route("/")
+def home():
+    """Default route for the root path."""
+    return jsonify({
+        "message": "Welcome to AutoOps API",
+        "status": "running",
+        "service": "AutoOps API",
+        "environment": os.getenv("ENV", "development")
+    })
+
 @app.route("/status")
 def status():
     """Health endpoint to verify the service is running."""
