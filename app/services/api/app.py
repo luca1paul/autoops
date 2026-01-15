@@ -1,8 +1,23 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
 import os
 
 app = Flask(__name__)
 
+# --- Prometheus Metrics Setup ---
+REQUEST_COUNT = Counter(
+    "autoops_request_count", 
+    "Total number of requests", 
+    ["method", "endpoint"]
+)
+
+@app.before_request
+def before_request():
+    """Count each incoming request by method and endpoint."""
+    from flask import request
+    REQUEST_COUNT.labels(method=request.method, endpoint=request.path).inc()
+
+# --- API Routes ---
 @app.route("/")
 def home():
     """Default route for the root path."""
@@ -22,5 +37,12 @@ def status():
         "environment": os.getenv("ENV", "development")
     })
 
+@app.route("/metrics")
+def metrics():
+    """Expose Prometheus metrics."""
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+# --- Entry Point ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
