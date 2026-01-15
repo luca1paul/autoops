@@ -1,0 +1,53 @@
+# Ansible playbook to set up RabbitMQ on AutoOps servers
+# This playbook installs RabbitMQ and ensures the service is running.
+
+---
+- name: Install and configure RabbitMQ
+  hosts: autoops_servers
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - curl
+          - gnupg
+          - apt-transport-https
+          - erlang-base
+          - socat
+        state: present
+
+    - name: Add RabbitMQ signing key
+      ansible.builtin.shell: |
+        curl -1sLf 'https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA' | gpg --dearmor | tee /usr/share/keyrings/com.rabbitmq.team.gpg > /dev/null
+
+    - name: Add RabbitMQ repositories
+      copy:
+        dest: /etc/apt/sources.list.d/rabbitmq.list
+        content: |
+          deb [signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://ppa1.rabbitmq.com/erlang/debian jammy main
+          deb [signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://ppa1.rabbitmq.com/rabbitmq-server/debian jammy main
+
+    - name: Update apt cache again
+      apt:
+        update_cache: yes
+
+    - name: Install RabbitMQ server
+      apt:
+        name: rabbitmq-server
+        state: present
+
+    - name: Ensure RabbitMQ service is started and enabled
+      service:
+        name: rabbitmq-server
+        state: started
+        enabled: yes
+
+    - name: Enable RabbitMQ management plugin
+      command: rabbitmq-plugins enable rabbitmq_management
+      args:
+        creates: /etc/rabbitmq/enabled_plugins
