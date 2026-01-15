@@ -1,0 +1,51 @@
+name: AutoOps Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # allow manual runs
+
+jobs:
+  deploy:
+    name: Deploy AutoOps Infrastructure
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: eu-central-1  # adjust to your region
+
+    steps:
+      # --- Checkout Code ---
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- Set up Terraform ---
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      # --- Terraform Init & Apply ---
+      - name: Terraform Init
+        working-directory: infra/terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: infra/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform apply -auto-approve
+
+      # --- Install Ansible ---
+      - name: Install Ansible
+        run: sudo apt update && sudo apt install -y ansible
+
+      # --- Run Ansible Playbook ---
+      - name: Run Ansible Deployment
+        working-directory: ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: |
+          ansible-playbook playbooks/deploy_autoops.yml
+

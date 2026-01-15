@@ -1,0 +1,24 @@
+---
+- name: Deploy latest AutoOps container
+  hosts: autoops_servers
+  become: yes
+  tasks:
+    - name: Pull latest AutoOps API image
+      community.docker.docker_image:
+        name: ghcr.io/luca1paul/autoops-api:latest
+        source: pull
+
+    - name: Stop existing AutoOps container (if any)
+      community.docker.docker_container:
+        name: autoops_api
+        state: stopped
+      ignore_errors: yes
+
+    - name: Start new AutoOps container
+      community.docker.docker_container:
+        name: autoops_api
+        image: ghcr.io/luca1paul/autoops-api:latest
+        restart_policy: always
+        ports:
+          - "5000:5000"
+
