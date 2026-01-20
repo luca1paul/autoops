@@ -2,12 +2,9 @@
 # Docker Compose configuration for AutoOps services
 # This file defines the services required for AutoOps, including the API, Nginx, RabbitMQ, Prometheus, and Grafana.
 
-version: '3.9'
-
 services:
   api:
-    build: ./app/services/api
-    container_name: autoops_api
+    image: ghcr.io/luca1paul/autoops-api:latest
     ports:
       - "5000:5000"
     environment:
