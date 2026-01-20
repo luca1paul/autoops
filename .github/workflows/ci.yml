@@ -9,6 +9,8 @@ name: AutoOps Full Pipeline (Build → Push → Deploy → Verify → Observe)
 on:
   push:
     branches: ["main"]
+  pull_request: 
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -29,7 +31,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Build image
         run: |
@@ -54,7 +56,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_PAT }}
 
       # DEPLOY: bring up your stack
       - name: Deploy (Docker Compose)
