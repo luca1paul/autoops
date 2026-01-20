@@ -1,0 +1,16 @@
+# monitoring/grafana/provisioning/dashboards/dashboard.yml
+# Grafana dashboard provisioning for AutoOps monitoring
+# This file configures Grafana to load predefined dashboards for AutoOps.
+
+---
+apiVersion: 1
+
+providers:
+  - name: "AutoOps"
+    orgId: 1
+    folder: "AutoOps"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
