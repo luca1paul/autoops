@@ -12,9 +12,9 @@ app = Flask(__name__)
 # --- Prometheus Metrics Setup ---
 # Metrica cerută la punctul 1.1
 HTTP_REQUESTS_TOTAL = Counter(
-    "autoops_http_requests_total", 
-    "Total number of HTTP requests by status", 
-    ["status"]
+    "autoops_http_requests_total",
+    "Total number of HTTP requests by status",
+    ["method", "endpoint", "status"]
 )
 
 # Metrica existentă (păstrată pentru compatibilitate)
@@ -31,11 +31,11 @@ def before_request():
 
 @app.after_request
 def after_request(response):
-    """
-    1.1 Înregistrează status_code într-un counter cu label status.
-    Această funcție rulează după fiecare request, automatizând colectarea.
-    """
-    HTTP_REQUESTS_TOTAL.labels(status=str(response.status_code)).inc()
+    HTTP_REQUESTS_TOTAL.labels(
+        method=request.method,
+        endpoint=request.path,
+        status=str(response.status_code)
+    ).inc()
     return response
 
 # --- API Routes ---
