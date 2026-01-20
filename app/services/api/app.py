@@ -3,13 +3,21 @@
 # This module sets up a Flask API service with Prometheus metrics integration.
 # It includes routes for health checks and metrics exposure.
 
-from flask import Flask, jsonify, Response # type: ignore
+from flask import Flask, jsonify, Response, request # type: ignore
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST # type: ignore
 import os
 
 app = Flask(__name__)
 
 # --- Prometheus Metrics Setup ---
+# Metrica cerută la punctul 1.1
+HTTP_REQUESTS_TOTAL = Counter(
+    "autoops_http_requests_total", 
+    "Total number of HTTP requests by status", 
+    ["status"]
+)
+
+# Metrica existentă (păstrată pentru compatibilitate)
 REQUEST_COUNT = Counter(
     "autoops_request_count", 
     "Total number of requests", 
@@ -19,35 +27,39 @@ REQUEST_COUNT = Counter(
 @app.before_request
 def before_request():
     """Count each incoming request by method and endpoint."""
-    from flask import request # type: ignore
     REQUEST_COUNT.labels(method=request.method, endpoint=request.path).inc()
 
+@app.after_request
+def after_request(response):
+    """
+    1.1 Înregistrează status_code într-un counter cu label status.
+    Această funcție rulează după fiecare request, automatizând colectarea.
+    """
+    HTTP_REQUESTS_TOTAL.labels(status=str(response.status_code)).inc()
+    return response
+
 # --- API Routes ---
+
 @app.route("/")
 def home():
-    """Default route for the root path."""
-    return jsonify({
-        "message": "Welcome to AutoOps API",
-        "status": "running",
-        "service": "AutoOps API",
-        "environment": os.getenv("ENV", "development")
-    })
+    return jsonify({"message": "Welcome to AutoOps API", "status": "running"})
 
 @app.route("/status")
 def status():
-    """Health endpoint to verify the service is running."""
-    return jsonify({
-        "status": "ok",
-        "service": "AutoOps API",
-        "environment": os.getenv("ENV", "development")
-    })
+    return jsonify({"status": "ok"})
+
+@app.route("/fail")
+def fail():
+    """
+    Fail point 500.
+    """
+    return "Internal Server Error", 500
 
 @app.route("/metrics")
 def metrics():
     """Expose Prometheus metrics."""
     return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
-# --- Entry Point ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
+    

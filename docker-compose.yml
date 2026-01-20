@@ -5,6 +5,8 @@
 services:
   api:
     image: ghcr.io/luca1paul/autoops-api:latest
+    build: ./app/services/api
+    container_name: autoops_api
     ports:
       - "5000:5000"
     environment:
