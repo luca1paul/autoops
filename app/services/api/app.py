@@ -1,3 +1,8 @@
+# app/services/api/app.py
+# AutoOps API Service
+# This module sets up a Flask API service with Prometheus metrics integration.
+# It includes routes for health checks and metrics exposure.
+
 from flask import Flask, jsonify, Response # type: ignore
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST # type: ignore
 import os

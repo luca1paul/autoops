@@ -1,48 +1,107 @@
-name: AutoOps CI Pipeline
+# .github/workflows/ci.yml
+# ansible/playbooks/deploy_autoops.yml
+# Deploy latest AutoOps container
+# This playbook pulls the latest AutoOps API image from GitHub Container Registry
+# and deploys it on the target servers.
+
+name: AutoOps Full Pipeline (Build → Push → Deploy → Verify → Observe)
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  build:
-    name: Build & Test API
+  build_push:
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          cd app/services/api
-          pip install -r requirements.txt
-
-      - name: Run basic Flask test
-        run: |
-          cd app/services/api
-          python -m unittest discover -s tests || echo "⚠️ No tests found, continuing"
-
-      - name: Build Docker image
-        run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/autoops-api:latest ./app/services/api
-
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Build image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/autoops-api:latest ./app/services/api
 
-      - name: Push Docker image
+      - name: Push image
         run: |
           docker push ghcr.io/${{ github.repository_owner }}/autoops-api:latest
 
+  deploy_verify_observe:
+    name: Deploy + Verify + Observe Metrics
+    runs-on: ubuntu-latest
+    needs: build_push
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR (pull)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # DEPLOY: bring up your stack
+      - name: Deploy (Docker Compose)
+        run: |
+          docker compose up -d --build
+          docker ps
+
+      # VERIFY: wait for API to become healthy
+      - name: Verify API health (/status)
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:5000/status > /dev/null; then
+              echo "API is healthy ✅"
+              exit 0
+            fi
+            echo "Waiting for API..."
+            sleep 2
+          done
+          echo "API did not become healthy ❌"
+          docker compose logs --no-color api
+          exit 1
+
+      # OBSERVE: hit the API a few times to generate metrics
+      - name: Generate traffic
+        run: |
+          for i in {1..10}; do
+            curl -fsS http://localhost:5000/status > /dev/null
+          done
+          echo "Traffic generated ✅"
+
+      # OBSERVE: confirm Prometheus is scraping and metric exists
+      - name: Observe metrics in Prometheus
+        run: |
+          for i in {1..30}; do
+            # Query Prometheus for your counter
+            RESP=$(curl -fsS "http://localhost:9090/api/v1/query?query=sum(autoops_request_count_total)")
+            echo "$RESP" | grep -q '"status":"success"' && echo "$RESP" | grep -q '"result"' && break
+            echo "Waiting for Prometheus to scrape metrics..."
+            sleep 2
+          done
+
+          echo "Prometheus query response:"
+          echo "$RESP"
+
+          echo "$RESP" | grep -q '"result":\[' || (echo "Prometheus did not return metrics ❌" && exit 1)
+          echo "Metrics observed ✅"
+
+      # Optional: cleanup (keeps runner clean)
+      - name: Teardown
+        if: always()
+        run: |
+          docker compose down

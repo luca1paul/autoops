@@ -1,3 +1,4 @@
+# ansible/playbooks/install_monitoring.yml
 # Ansible playbook to set up monitoring on AutoOps servers
 # This playbook installs monitoring tools and configures them.
 

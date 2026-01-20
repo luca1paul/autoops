@@ -1,3 +1,7 @@
+# docker-compose.yml
+# Docker Compose configuration for AutoOps services
+# This file defines the services required for AutoOps, including the API, Nginx, RabbitMQ, Prometheus, and Grafana.
+
 version: '3.9'
 
 services:
@@ -32,6 +36,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
+    command: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+              rabbitmq-server"
     networks:
       - autoops_net
 

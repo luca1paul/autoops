@@ -1,3 +1,6 @@
+# infra/terraform/provider.tf
+# Terraform configuration for AutoOps project
+# This file sets up the AWS provider to interact with a localstack instance for testing.
 terraform {
   backend "local" {
     path = "terraform.tfstate"
