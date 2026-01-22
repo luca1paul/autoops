@@ -1,3 +1,8 @@
+# app/services/api/Dockerfile
+# Dockerfile for AutoOps API Service
+# This Dockerfile sets up a Python environment with Flask and Prometheus
+# to run the AutoOps API service.
+
 # Base image
 FROM python:3.11-slim
 

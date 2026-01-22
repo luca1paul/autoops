@@ -1,3 +1,7 @@
+# ansible/playbooks/setup_rabbitmq.yml
+# Ansible playbook to set up RabbitMQ on AutoOps servers
+# This playbook installs RabbitMQ, configures it, and ensures the service is running.
+
 ---
 - name: Install and configure RabbitMQ
   hosts: autoops_servers

@@ -1,3 +1,8 @@
+# ansible/playbooks/deploy_autoops.yml
+# Deploy latest AutoOps container
+# This playbook pulls the latest AutoOps API image from GitHub Container Registry
+# and deploys it on the target servers.
+
 ---
 - name: Deploy latest AutoOps container
   hosts: autoops_servers

@@ -1,4 +1,6 @@
-# variables.tf
+# infra/terraform/variables.tf
+# Terraform variables for AutoOps project
+# This file defines input variables used in the Terraform configuration.
 
 variable "aws_region" {
   description = "AWS region to deploy resources in"

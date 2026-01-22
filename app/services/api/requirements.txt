@@ -1,2 +1,6 @@
+# app/services/api/requirements.txt
+# Requirements for AutoOps API Service
+# This file lists the Python dependencies needed for the API service.
+
 flask==3.0.2
 prometheus-client

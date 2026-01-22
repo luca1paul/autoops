@@ -1,6 +1,13 @@
+<<<<<<< HEAD
+=======
+# docker-compose.yml
+# Docker Compose configuration for AutoOps services
+# This file defines the services required for AutoOps, including the API, Nginx, RabbitMQ, Prometheus, and Grafana.
+>>>>>>> 0a1dfd5a25f562c416f5433be208c10beb062eda
 
 services:
   api:
+    image: ghcr.io/luca1paul/autoops-api:latest
     build: ./app/services/api
     container_name: autoops_api
     ports:
@@ -31,6 +38,10 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
+    command: >
+      bash -c "rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+              rabbitmq-server"
     networks:
       - autoops_net
 
@@ -58,8 +69,25 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
     networks:
       - autoops_net
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: autoops_node_exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - autoops_net
+    restart: unless-stopped
 
 networks:
   autoops_net:

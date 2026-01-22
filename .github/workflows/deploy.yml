@@ -1,10 +1,15 @@
+# .github/workflows/deploy.yml
+# .github/workflows/ci.yml
+# ansible/playbooks/deploy_autoops.yml
+# Deploy latest AutoOps container
+# This playbook pulls the latest AutoOps API image from GitHub Container Registry
+# and deploys it on the target servers.
+
+---
 name: AutoOps Deployment
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:  # allow manual runs
+  workflow_dispatch:
 
 jobs:
   deploy:

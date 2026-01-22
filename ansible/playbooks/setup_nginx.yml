@@ -1,3 +1,4 @@
+# ansible/playbooks/setup_nginx.yml
 # Ansible playbook to set up Nginx on AutoOps servers
 # This playbook installs Nginx, configures a basic site, and ensures the service is running. 
 

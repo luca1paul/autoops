@@ -1,0 +1,24 @@
+{
+  "title": "AutoOps Overview",
+  "uid": "autoops-01",
+  "panels": [
+    {
+      "title": "API Request Rate (1m)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [{ "expr": "sum(rate(autoops_request_count[1m])) by (endpoint)" }]
+    },
+    {
+      "title": "System CPU Usage",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 80 }] }
+        }
+      },
+      "targets": [{ "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode='idle'}[5m])))" }]
+    }
+  ]
+}

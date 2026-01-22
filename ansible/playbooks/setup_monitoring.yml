@@ -1,4 +1,33 @@
+# ansible/playbooks/install_monitoring.yml
 # Ansible playbook to set up monitoring on AutoOps servers
 # This playbook installs monitoring tools and configures them.
 
 ---
+- name: Setup AutoOps Monitoring Stack (Prometheus + Grafana)
+  hosts: autoops_servers
+  become: yes
+
+  tasks:
+    - name: Create AutoOps directory on server
+      file:
+        path: /opt/autoops
+        state: directory
+        mode: "0755"
+
+    - name: Copy Prometheus config
+      copy:
+        src: ../../monitoring/prometheus/prometheus.yml
+        dest: /opt/autoops/prometheus.yml
+        mode: "0644"
+
+    # NOTE: This assumes Docker + Docker Compose are already installed
+    - name: Copy docker-compose file
+      copy:
+        src: ../../docker-compose.yml
+        dest: /opt/autoops/docker-compose.yml
+        mode: "0644"
+
+    - name: Start monitoring stack with Docker Compose
+      shell: |
+        cd /opt/autoops
+        docker compose up -d --build
