@@ -102,7 +102,7 @@ jobs:
 
           # Query metrics and check for "success" + non-empty result
           for i in {1..30}; do
-            RESP=$(curl -s "http://localhost:9090/api/v1/query?query=sum(autoops_request_count)")
+            RESP=$(curl -s "http://localhost:9090/api/v1/query?query=sum(autoops_request_count_total)")
             
             # Use grep to check if Prometheus returned a successful result with data
             if echo "$RESP" | grep -q '"status":"success"' && echo "$RESP" | grep -q '"value"'; then
