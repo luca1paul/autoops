@@ -5,19 +5,17 @@
 
 from flask import Flask, jsonify, Response, request # type: ignore
 from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST # type: ignore
-import os
 
 app = Flask(__name__)
 
 # --- Prometheus Metrics Setup ---
-# Metrica cerută la punctul 1.1
 HTTP_REQUESTS_TOTAL = Counter(
     "autoops_http_requests_total",
     "Total number of HTTP requests by status",
     ["method", "endpoint", "status"]
 )
 
-# Metrica existentă (păstrată pentru compatibilitate)
+# Existing metric
 REQUEST_COUNT = Counter(
     "autoops_request_count", 
     "Total number of requests", 

@@ -1,4 +1,4 @@
-# outputs.tf
+# infra/terraform/outputs.tf
 
 # These were used for AWS-based resources (disabled for local learning)
 # output "vpc_id" {
