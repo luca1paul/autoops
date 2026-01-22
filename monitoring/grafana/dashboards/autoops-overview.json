@@ -6,7 +6,12 @@
       "title": "API Request Rate (1m)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
-      "targets": [{ "expr": "sum(rate(autoops_request_count[1m])) by (endpoint)" }]
+      "targets": [
+        { 
+          "expr": "sum(rate(autoops_request_count_total[1m])) by (endpoint)",
+          "legendFormat": "{{endpoint}}"
+        }
+      ]
     },
     {
       "title": "System CPU Usage",
@@ -15,10 +20,18 @@
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
-          "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 80 }] }
+          "thresholds": { 
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null }, 
+              { "color": "red", "value": 80 }
+            ] 
+          }
         }
       },
-      "targets": [{ "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode='idle'}[5m])))" }]
+      "targets": [
+        { "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode='idle'}[5m])))" }
+      ]
     }
   ]
 }
