@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-=======
 # docker-compose.yml
 # Docker Compose configuration for AutoOps services
 # This file defines the services required for AutoOps, including the API, Nginx, RabbitMQ, Prometheus, and Grafana.
->>>>>>> 0a1dfd5a25f562c416f5433be208c10beb062eda
 
 services:
   api:
