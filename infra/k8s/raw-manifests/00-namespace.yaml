@@ -1,0 +1,7 @@
+# infra/k8s/raw-manifests/00-namespace.yaml
+# This manifest creates a Kubernetes namespace for the application.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: autoops
