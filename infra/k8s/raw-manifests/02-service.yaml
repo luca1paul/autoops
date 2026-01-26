@@ -1,0 +1,18 @@
+# infra/k8s/raw-manifests/02-service.yaml
+# This manifest creates a Service to expose the autoops-api Deployment
+# within the Kubernetes cluster. It uses ClusterIP type for internal
+# communication, enhancing security by not exposing the service externally.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: autoops-service
+  namespace: autoops
+spec:
+  type: ClusterIP # Internal only (Secure by default)
+  selector:
+    app: autoops-api # Must match the Deployment label
+  ports:
+  - protocol: TCP
+    port: 80 # Port the Service listens on
+    targetPort: 5000 # Port the Container is listening on
