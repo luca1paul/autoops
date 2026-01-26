@@ -1,3 +1,4 @@
+# infra/charts/autoops/values.yaml
 # Default values for autoops.
 # This is a YAML-formatted file.
 
@@ -10,15 +11,32 @@ image:
   tag: "latest"
 
 imagePullSecrets:
-  - name: ghcr-secret
+- name: ghcr-secret
 
 service:
   type: ClusterIP
   port: 80
   targetPort: 5000
 
-# We don't need these yet, but keep the structure valid
 resources: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+livenessProbe:
+  httpGet:
+    path: /status
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /status
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+# Disable autoscaling explicitly to match my template logic
+autoscaling:
+  enabled: false
