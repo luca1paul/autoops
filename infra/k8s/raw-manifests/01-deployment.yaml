@@ -1,0 +1,37 @@
+# infra/k8s/raw-manifests/01-deployment.yaml
+# This manifest creates a Deployment for the autoops-api application.
+# It pulls the latest image from GitHub Container Registry and sets up
+# liveness probes for self-healing and scalability.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoops-api
+  namespace: autoops
+spec:
+  replicas: 2 # Scalability
+  selector:
+    matchLabels:
+      app: autoops-api
+  template:
+    metadata:
+      labels:
+        app: autoops-api
+    spec:
+      imagePullSecrets:
+      - name: ghcr-secret
+      containers:
+      - name: api
+        # REPLACE with your actual image path
+        image: ghcr.io/luca1paul/autoops-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        # Liveness Probe (Self-Healing)
+        # K8s will restart the pod if this fails
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
