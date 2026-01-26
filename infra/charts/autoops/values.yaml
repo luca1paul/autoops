@@ -18,7 +18,14 @@ service:
   port: 80
   targetPort: 5000
 
-resources: {}
+resources:
+  limits:
+    cpu: 200m # 0.2 CPU Cores
+    memory: 256Mi # 256 Megabytes RAM
+  requests:
+    cpu: 100m # 0.1 CPU Cores
+    memory: 128Mi # 128 Megabytes RAM
+
 nodeSelector: {}
 tolerations: []
 affinity: {}
