@@ -25,3 +25,5 @@ Thumbs.db
 terraform.tfstate
 terraform.tfstate.backup
 
+export_project.py
+project_context.txt

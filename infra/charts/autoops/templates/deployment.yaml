@@ -1,48 +1,63 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "autoops.fullname" . }}
+  name: autoops-api
+  namespace: autoops
   labels:
-    {{- include "autoops.labels" . | nindent 4 }}
+    app: autoops-api
 spec:
-  replicas: {{ .Values.replicaCount }}
+  # 1. Replicas (Instead of {{ .Values.replicaCount }})
+  replicas: 2
+
   selector:
     matchLabels:
-      {{- include "autoops.selectorLabels" . | nindent 6 }}
+      app: autoops-api
+
   template:
     metadata:
       labels:
-        {{- include "autoops.labels" . | nindent 8 }}
+        app: autoops-api
     spec:
+      # 2. Image Pull Secret (Crucial for GHCR)
       imagePullSecrets:
-        - name: ghcr-secret
-      serviceAccountName: {{ include "autoops.serviceAccountName" . }}
+      - name: ghcr-secret
+
       containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: 5000
-              protocol: TCP
-          # --- FORCED RESOURCES ---
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
-          # -------------------------
-          livenessProbe:
-            httpGet:
-              path: /status
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 15
-          readinessProbe:
-            httpGet:
-              path: /status
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
+      - name: api
+        # 3. Image (Instead of {{ .Values.image.repository }})
+        image: ghcr.io/luca1paul/autoops-api:latest
+        imagePullPolicy: Always
+
+        ports:
+        - name: http
+          containerPort: 5000
+          protocol: TCP
+
+        # 4. Environment Variables (CRITICAL: Connecting to RabbitMQ)
+        # Your Helm template was missing this!
+        env:
+        - name: RABBITMQ_HOST
+          value: "rabbitmq"
+
+        # 5. Resources (Hardcoded values)
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+        # 6. Probes (Self-healing)
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
